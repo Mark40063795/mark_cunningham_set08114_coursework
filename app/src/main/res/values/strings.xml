@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Food Order</string>
+    <string name="slogan">At home? At the office? In need of a break? Wherever you are, whatever time of day - we will find you and feed you.</string>
+    <string name="logodesc">Food order logo</string>
+    <string name="register">Register</string>
+    <string name="login">Log In</string>
+    <string name="title_activity_home">Home</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+</resources>
