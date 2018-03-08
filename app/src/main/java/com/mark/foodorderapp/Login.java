@@ -55,6 +55,7 @@ public class Login extends AppCompatActivity {
                             //Gets users information
                             mDialog.dismiss();
                             User user = dataSnapshot.child(phoneLogin.getText().toString()).getValue(User.class);
+                            user.setPhone(phoneLogin.getText().toString());
                             if (user.getPassword().equals(passLogin.getText().toString())) {
                                 {
                                     Toast.makeText(Login.this, "Sign in successful", Toast.LENGTH_SHORT).show();
