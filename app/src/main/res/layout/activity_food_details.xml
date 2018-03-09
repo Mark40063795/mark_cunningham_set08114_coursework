@@ -106,7 +106,7 @@
                         >
 
                         <ImageView
-                            app:srcCompat="@drawable/money"
+                            app:srcCompat="@drawable/money2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
