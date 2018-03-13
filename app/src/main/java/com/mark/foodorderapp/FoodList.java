@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.mark.foodorderapp.Common.Common;
 import com.mark.foodorderapp.Interface.ItemClickListener;
 import com.mark.foodorderapp.Model.Food;
 import com.mark.foodorderapp.ViewHolder.FoodViewHolder;
@@ -46,7 +47,13 @@ public class FoodList extends AppCompatActivity {
             categoryId = getIntent().getStringExtra("CategoryId");
         if(!categoryId.isEmpty() && categoryId != null)
         {
-            loadFoodList(categoryId);
+            if(Common.checkConnection(getBaseContext()))
+                loadFoodList(categoryId);
+            else
+            {
+                Toast.makeText(FoodList.this, "Please check your connection to the internet", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
     }
 
@@ -71,7 +78,6 @@ public class FoodList extends AppCompatActivity {
                 });
             }
         };
-
         recyclerView.setAdapter(adapter);
 
     }

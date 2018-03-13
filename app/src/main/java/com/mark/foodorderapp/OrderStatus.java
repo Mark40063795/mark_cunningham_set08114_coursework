@@ -60,7 +60,7 @@ public class OrderStatus extends AppCompatActivity {
         //Basically redundant, due to time constraints haven't added the ability to update order status
 
         if(status.equals("0"))
-            return "Order placed";
+            return "Order Confirmed";
         else if(status.equals("1"))
             return "Out For Delivery";
         else

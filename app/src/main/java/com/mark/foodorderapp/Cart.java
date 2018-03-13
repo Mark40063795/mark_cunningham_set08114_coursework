@@ -66,7 +66,10 @@ public class Cart extends AppCompatActivity {
         btnPlace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                alertDialog();
+                if(cart.size()>0)
+                    alertDialog();
+                else
+                    Toast.makeText(Cart.this, "Your cart is empty", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -119,6 +122,7 @@ public class Cart extends AppCompatActivity {
     {
         cart = new Database(this).getCarts();
         adapter = new CartAdapter(cart,this);
+        adapter.notifyDataSetChanged();
         recyclerView.setAdapter(adapter);
 
         int total = 0;
@@ -130,4 +134,19 @@ public class Cart extends AppCompatActivity {
         totalPrice.setText(fmt.format(total));
     }
 
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if(item.getTitle().equals(Common.DELETE))
+            deleteCart(item.getOrder());
+        return true;
+    }
+
+    private void deleteCart(int position) {
+        //removes item from cart, deletes data from sqlite db, update order in db, refresh order
+        cart.remove(position);
+        new Database(this).emptyCart();
+        for(Order item:cart)
+            new Database(this).addToCart(item);
+        loadOrder();
+    }
 }

@@ -12,6 +12,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.mark.foodorderapp.Common.Common;
 import com.mark.foodorderapp.Model.User;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
@@ -32,12 +33,14 @@ public class Register extends AppCompatActivity {
         registerBtn = (Button)findViewById(R.id.registerBtn);
 
         //Code for firebase integration
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference table_user = database.getReference("user");
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (Common.checkConnection(getBaseContext())) {
+
                 final ProgressDialog mDialog = new ProgressDialog(Register.this);
                 mDialog.setMessage("Please Wait :)");
                 mDialog.show();
@@ -46,15 +49,12 @@ public class Register extends AppCompatActivity {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         //Check if the phone number already exists
-                        if(dataSnapshot.child(phoneRegister.getText().toString()).exists())
-                        {
+                        if (dataSnapshot.child(phoneRegister.getText().toString()).exists()) {
                             mDialog.dismiss();
                             Toast.makeText(Register.this, "This phone number is already in use", Toast.LENGTH_SHORT).show();
-                        }
-                        else
-                        {
+                        } else {
                             mDialog.dismiss();
-                            User user = new User(nameRegister.getText().toString(),passRegister.getText().toString());
+                            User user = new User(nameRegister.getText().toString(), passRegister.getText().toString());
                             table_user.child(phoneRegister.getText().toString()).setValue(user);
                             Toast.makeText(Register.this, "Account Created", Toast.LENGTH_SHORT).show();
                             finish();
@@ -65,7 +65,13 @@ public class Register extends AppCompatActivity {
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
-                });
+                 });
+                }
+                else
+                {
+                    Toast.makeText(Register.this, "Please check your connection to the internet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
         });
     }

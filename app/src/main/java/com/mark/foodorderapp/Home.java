@@ -3,7 +3,6 @@ package com.mark.foodorderapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -26,6 +25,8 @@ import com.mark.foodorderapp.Interface.ItemClickListener;
 import com.mark.foodorderapp.Model.Category;
 import com.mark.foodorderapp.ViewHolder.MenuViewHolder;
 import com.squareup.picasso.Picasso;
+
+import io.paperdb.Paper;
 
 public class Home extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -51,6 +52,8 @@ public class Home extends AppCompatActivity
         //Firebase
         database = FirebaseDatabase.getInstance();
         category = database.getReference("Category");
+
+        Paper.init(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -81,7 +84,14 @@ public class Home extends AppCompatActivity
         layoutManager = new LinearLayoutManager(this);
         recycler_menu.setLayoutManager(layoutManager);
 
-        loadMenu();
+        //checks for connection, if connected loads menu
+        if(Common.checkConnection(getBaseContext()))
+            loadMenu();
+        else
+        {
+            Toast.makeText(Home.this, "Please check your connection to the internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
     }
 
@@ -128,6 +138,8 @@ public class Home extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.refresh)
+            loadMenu();
 
         return super.onOptionsItemSelected(item);
     }
@@ -147,6 +159,9 @@ public class Home extends AppCompatActivity
             Intent orderIntent = new Intent(Home.this,OrderStatus.class);
             startActivity(orderIntent);
         } else if (id == R.id.nav_Signout) {
+            //forgets saved details
+            Paper.book().destroy();
+            //logs out, navigates to main
             Intent signoutIntent = new Intent(Home.this,Login.class);
             signoutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(signoutIntent);
