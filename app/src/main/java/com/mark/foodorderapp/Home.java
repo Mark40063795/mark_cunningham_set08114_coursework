@@ -1,10 +1,15 @@
 package com.mark.foodorderapp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,14 +23,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.mark.foodorderapp.Common.Common;
 import com.mark.foodorderapp.Interface.ItemClickListener;
 import com.mark.foodorderapp.Model.Category;
 import com.mark.foodorderapp.ViewHolder.MenuViewHolder;
+import com.rengwuxian.materialedittext.MaterialEditText;
 import com.squareup.picasso.Picasso;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import dmax.dialog.SpotsDialog;
 import io.paperdb.Paper;
 
 public class Home extends AppCompatActivity
@@ -40,6 +53,8 @@ public class Home extends AppCompatActivity
 
     FirebaseRecyclerAdapter<Category, MenuViewHolder> adapter;
 
+    SwipeRefreshLayout swipeRefreshLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +63,40 @@ public class Home extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Menu");
         setSupportActionBar(toolbar);
+
+        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipe_layout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.GreenButton,
+                android.R.color.holo_green_dark,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark
+                );
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                //checks for connection, if connected loads menu
+                if(Common.checkConnection(getBaseContext()))
+                    loadMenu();
+                else
+                {
+                    Toast.makeText(Home.this, "Please check your connection to the internet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+        });
+
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                //checks for connection, if connected loads menu
+                if(Common.checkConnection(getBaseContext()))
+                    loadMenu();
+                else
+                {
+                    Toast.makeText(Home.this, "Please check your connection to the internet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+        });
 
         //Firebase
         database = FirebaseDatabase.getInstance();
@@ -84,15 +133,6 @@ public class Home extends AppCompatActivity
         layoutManager = new LinearLayoutManager(this);
         recycler_menu.setLayoutManager(layoutManager);
 
-        //checks for connection, if connected loads menu
-        if(Common.checkConnection(getBaseContext()))
-            loadMenu();
-        else
-        {
-            Toast.makeText(Home.this, "Please check your connection to the internet", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
     }
 
     private void loadMenu() {
@@ -116,6 +156,7 @@ public class Home extends AppCompatActivity
             }
         };
         recycler_menu.setAdapter(adapter);
+        swipeRefreshLayout.setRefreshing(false);
     }
 
 
@@ -136,13 +177,6 @@ public class Home extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == R.id.refresh)
-            loadMenu();
-
-        return super.onOptionsItemSelected(item);
-    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -162,13 +196,84 @@ public class Home extends AppCompatActivity
             //forgets saved details
             Paper.book().destroy();
             //logs out, navigates to main
-            Intent signoutIntent = new Intent(Home.this,Login.class);
+            Intent signoutIntent = new Intent(Home.this,MainActivity.class);
             signoutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(signoutIntent);
+        }
+        else if (id == R.id.nav_passchange) {
+            changePassDialog();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void changePassDialog() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(Home.this);
+        alertDialog.setTitle("Change Password");
+        alertDialog.setMessage("Please enter your old password and new password");
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View layout_pwd = inflater.inflate(R.layout.change_password_layout, null);
+
+        final MaterialEditText oldPassword = (MaterialEditText)layout_pwd.findViewById(R.id.oldPassword);
+        final MaterialEditText newPassword = (MaterialEditText)layout_pwd.findViewById(R.id.newPassword);
+        final MaterialEditText repeatPassword = (MaterialEditText)layout_pwd.findViewById(R.id.repeatPassword);
+
+        alertDialog.setView(layout_pwd);
+
+        alertDialog.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(Home.this);
+                waitingDialog.show();
+
+                if(oldPassword.getText().toString().equals(Common.currentUser.getPassword()))
+                {
+                    if(newPassword.getText().toString().equals(repeatPassword.getText().toString()))
+                    {
+                        Map<String,Object> passwordUpdate = new HashMap<>();
+                        passwordUpdate.put("password",newPassword.getText().toString());
+
+                        DatabaseReference user = FirebaseDatabase.getInstance().getReference("user");
+                        user.child(Common.currentUser.getPhone())
+                                .updateChildren(passwordUpdate)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        waitingDialog.dismiss();
+                                        Toast.makeText(Home.this, "Password Changed!", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(Home.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                    else
+                    {
+                        waitingDialog.dismiss();
+                        Toast.makeText(Home.this, "New Passwords Don't Match, Please Try Again", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else
+                {
+                    waitingDialog.dismiss();
+                    Toast.makeText(Home.this, "Incorrect Password. Please Try Again", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        alertDialog.show();
     }
 }

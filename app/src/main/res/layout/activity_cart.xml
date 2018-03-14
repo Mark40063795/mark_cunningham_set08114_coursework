@@ -1,21 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipe_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="5dp"
     android:background="@drawable/burgerbackgrounddark"
     tools:context="com.mark.foodorderapp.Cart">
 
-    <android.support.v7.widget.RecyclerView
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
         android:id="@+id/listCart"
         android:background="@android:color/transparent"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     </android.support.v7.widget.RecyclerView>
 
-    <android.support.v7.widget.CardView
+        <android.support.v7.widget.CardView
         android:layout_alignParentBottom="true"
         app:cardBackgroundColor="@color/RedShadow"
         android:layout_width="match_parent"
@@ -70,4 +75,6 @@
         
     </android.support.v7.widget.CardView>
 
-</RelativeLayout>
+    </RelativeLayout>
+
+</android.support.v4.widget.SwipeRefreshLayout>

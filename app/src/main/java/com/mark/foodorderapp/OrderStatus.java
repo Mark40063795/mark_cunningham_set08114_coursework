@@ -57,7 +57,7 @@ public class OrderStatus extends AppCompatActivity {
     }
 
     private String codeToStatus(String status) {
-        //Basically redundant, due to time constraints haven't added the ability to update order status
+        //Basically redundant, due to time constraints haven't added the ability to update order status from a second app for employees
 
         if(status.equals("0"))
             return "Order Confirmed";

@@ -62,7 +62,7 @@ public class Login extends AppCompatActivity {
                     mDialog.setMessage("Please Wait :)");
                     mDialog.show();
 
-                    ValueEventListener valueEventListener = table_user.addValueEventListener(new ValueEventListener() {
+                    table_user.addListenerForSingleValueEvent(new ValueEventListener() {
 
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -81,6 +81,8 @@ public class Login extends AppCompatActivity {
                                         Common.currentUser = user;
                                         startActivity(homeIntent);
                                         finish();
+
+                                        table_user.removeEventListener(this);
                                     }
                                 } else {
                                     Toast.makeText(Login.this, "Incorrect Password", Toast.LENGTH_SHORT).show();

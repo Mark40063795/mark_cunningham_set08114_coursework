@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -47,6 +48,8 @@ public class Cart extends AppCompatActivity {
 
     List<Order> cart = new ArrayList<>();
 
+    SwipeRefreshLayout swipeRefreshLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +66,40 @@ public class Cart extends AppCompatActivity {
         totalPrice = (TextView)findViewById(R.id.total);
         btnPlace = (FButton)findViewById(R.id.orderBtn);
 
+        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipe_layout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.GreenButton,
+                android.R.color.holo_green_dark,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark
+        );
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                //checks for connection, if connected loads menu
+                if(Common.checkConnection(getBaseContext()))
+                    loadOrder();
+                else
+                {
+                    Toast.makeText(Cart.this, "Please check your connection to the internet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+        });
+
+        swipeRefreshLayout.post(new Runnable() {
+            public void run() {
+                //checks for connection, if connected loads menu
+                if(Common.checkConnection(getBaseContext()))
+                    loadOrder();
+                else
+                {
+                    Toast.makeText(Cart.this, "Please check your connection to the internet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+        });
+
         btnPlace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,8 +109,6 @@ public class Cart extends AppCompatActivity {
                     Toast.makeText(Cart.this, "Your cart is empty", Toast.LENGTH_SHORT).show();
             }
         });
-
-        loadOrder();
     }
 
     private void alertDialog() {
@@ -132,6 +167,7 @@ public class Cart extends AppCompatActivity {
         NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
 
         totalPrice.setText(fmt.format(total));
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
